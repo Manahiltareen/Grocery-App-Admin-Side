@@ -1,6 +1,9 @@
-// screens/admin_dashboard_screen.dart
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:grocery_app_admin/Constant/theme/app_theme.dart';
+import 'package:grocery_app_admin/View/Category/manage_categories_screen.dart';
 import 'package:grocery_app_admin/View/widegts/dashboard_card.dart';
+
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});
@@ -8,73 +11,105 @@ class AdminDashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Admin Dashboard'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.account_circle),
-            onPressed: () {
-              // Handle profile tap
-            },
+      backgroundColor: Colors.white,
+      body: Column(
+        children: [
+          // Header Section
+          Container(
+            padding: const EdgeInsets.all(24.0),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppTheme.primaryColor.withOpacity(0.9),
+                  AppTheme.primaryColor.withOpacity(0.3),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.primaryColor.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Admin Dashboard',
+                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.notifications, color: Colors.white),
+                  onPressed: () {},
+                ),
+              ],
+            ),
           ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              // Handle logout
-            },
+          // Main Content
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  int crossAxisCount = (constraints.maxWidth / 300).floor(); // Approx 300px per card
+                  crossAxisCount = crossAxisCount < 2 ? 2 : crossAxisCount > 4 ? 4 : crossAxisCount;
+                  return GridView.count(
+                    crossAxisCount: crossAxisCount,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: 1.2,
+                    children: [
+                      DashboardCard(
+                        icon: Icons.category,
+                        title: 'Categories',
+                        subtitle: 'Manage categories',
+                        onTap: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context)=> ManageCategoriesScreen()));
+                        },
+                      ),
+                      DashboardCard(
+                        icon: Icons.shop,
+                        title: 'Products',
+                        subtitle: 'Manage products',
+                        onTap: () {},
+                      ),
+                      DashboardCard(
+                        icon: Icons.person,
+                        title: 'Users',
+                        subtitle: 'Manage users',
+                        onTap: () {},
+                      ),
+                      DashboardCard(
+                        icon: Icons.local_shipping,
+                        title: 'Orders',
+                        subtitle: 'View orders',
+                        onTap: () {},
+                      ),
+                      DashboardCard(
+                        icon: Icons.bar_chart,
+                        title: 'Reports',
+                        subtitle: 'View reports',
+                        onTap: () {},
+                      ),
+                      DashboardCard(
+                        icon: Icons.settings,
+                        title: 'Settings',
+                        subtitle: 'Configure settings',
+                        onTap: () {},
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
           ),
-          const SizedBox(width: 16),
         ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: GridView.count(
-          crossAxisCount: MediaQuery.of(context).size.width > 800 ? 3 : 2,
-          crossAxisSpacing: 24,
-          mainAxisSpacing: 24,
-          children: [
-            DashboardCard(
-              icon: Icons.shopping_cart,
-              title: 'Orders',
-              subtitle: 'Manage customer orders',
-              onTap: () {
-                // Navigate to Orders screen
-              },
-            ),
-            DashboardCard(
-              icon: Icons.inventory_2,
-              title: 'Products',
-              subtitle: 'View and update inventory',
-              onTap: () {
-                // Navigate to Products screen
-              },
-            ),
-            DashboardCard(
-              icon: Icons.category,
-              title: 'Categories',
-              subtitle: 'Organize product categories',
-              onTap: () {
-                Navigator.pushNamed(context, '/manage_categories');
-              },
-            ),
-            DashboardCard(
-              icon: Icons.people,
-              title: 'Customers',
-              subtitle: 'Manage user accounts',
-              onTap: () {
-                // Navigate to Customers screen
-              },
-            ),
-            DashboardCard(
-              icon: Icons.notifications,
-              title: 'Notifications',
-              subtitle: 'Send alerts and updates',
-              onTap: () {
-                // Navigate to Notifications screen
-              },
-            ),
-          ],
-        ),
       ),
     );
   }

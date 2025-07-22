@@ -1,5 +1,3 @@
-// screens/add_edit_category_screen.dart
-
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -7,6 +5,8 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:grocery_app_admin/Constant/theme/app_theme.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
+import 'package:path_provider/path_provider.dart'; // Added for persistent storage
+import 'package:path/path.dart' as path;
 
 class AddEditCategoryScreen extends StatefulWidget {
   const AddEditCategoryScreen({super.key});
@@ -36,8 +36,7 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
         _nameController.text = _initialCategoryData!['name'];
         _unitController.text = _initialCategoryData!['unit'];
         _selectedColor = _initialCategoryData!['bgColor'];
-        // For image, if it's a file path or network image, you'd handle it here.
-        // For this demo, we'll assume new image selection for simplicity or use placeholder.
+        // For editing, if image is a network URL, you might want to handle it differently
       }
     }
   }
@@ -50,13 +49,27 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
   }
 
   Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final pickedImageFile = await picker.pickImage(source: ImageSource.gallery, imageQuality: 50);
+    try {
+      final picker = ImagePicker();
+      final pickedImageFile = await picker.pickImage(source: ImageSource.gallery, imageQuality: 50);
 
-    if (pickedImageFile != null) {
-      setState(() {
-        _pickedImage = File(pickedImageFile.path);
-      });
+      if (pickedImageFile != null) {
+        // Get the app's documents directory for persistent storage
+        final directory = await getApplicationDocumentsDirectory();
+        final fileName = path.basename(pickedImageFile.path);
+        final savedImage = await File(pickedImageFile.path).copy('${directory.path}/$fileName');
+
+        setState(() {
+          _pickedImage = savedImage;
+        });
+      } else {
+        print('No image selected.');
+      }
+    } catch (e) {
+      print('Error picking image: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to pick image. Check permissions.')),
+      );
     }
   }
 
@@ -90,16 +103,15 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
   void _saveCategory() {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      // Here you would send data to your backend or update state
       final categoryData = {
-        'id': _isEditing ? _initialCategoryData!['id'] : const Uuid().v4(), // Generate new ID if adding
+        'id': _isEditing ? _initialCategoryData!['id'] : const Uuid().v4(),
         'name': _nameController.text,
         'unit': _unitController.text,
         'bgColor': _selectedColor,
-        'image': _pickedImage?.path, // In a real app, upload this image
+        'image': _pickedImage?.path ?? (_isEditing ? _initialCategoryData!['image'] : null),
       };
 
-      Navigator.of(context).pop(categoryData); // Return data to previous screen
+      Navigator.of(context).pop(categoryData);
     }
   }
 
